@@ -1,3 +1,6 @@
+# Title    : DB_Model
+# Filename : model.py
+# Author   : Adeola Ajala
 from pydantic import BaseModel
 
 class WebPage(BaseModel):
