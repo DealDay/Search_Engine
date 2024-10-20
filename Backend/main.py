@@ -10,7 +10,7 @@ from search_engine import(
 )
 
 # Creating instance of fastAPI
-app = FastAPI()
+app = FastAPI(openapi_version="3.0.2")
 
 # Allow port for frontend
 origins = ['http://localhost:3000']
@@ -24,7 +24,12 @@ app.add_middleware(
 )
 
 # API to get all web pages
-@app.get("/web_pages")
+@app.get("/web_page")
 async def get_web_pages():
+    response = await fetch_all_webPages()
+    return response
+
+@app.get("/site_pages")
+async def get_site_pages():
     response = await fetch_all_webPages()
     return response

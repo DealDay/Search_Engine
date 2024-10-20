@@ -5,14 +5,14 @@
 # Imports
 import asyncio.coroutines
 from fastapi import HTTPException
-from model import WebPage
+from search_engine import WebPage
 import motor.motor_asyncio
 import requests
 from bs4 import BeautifulSoup
 import asyncio
 
 # connection to DB
-client = motor.motor_asyncio.AsyncIOMotorClient('mongodb://0.0.0.0:27017')
+client = motor.motor_asyncio.AsyncIOMotorClient('mongodb://0.0.0.0:27017')#'mongodb://0.0.0.0:27017'
 database = client.search_engine
 collection = database.web_pages
 
@@ -52,3 +52,4 @@ async def get_links_from_webpage(webPageURL:str):
     
 if __name__ == "__main__":
     asyncio.run(get_links_from_webpage('https://www.wikipedia.org'))
+# End-of-file (EOF)
