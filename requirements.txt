@@ -11,3 +11,4 @@ pymongo==4.9.1
 requests==2.32.3
 uvloop==0.21.0
 httptools==0.6.4
+pydantic==2.9.2

@@ -6,11 +6,13 @@ from pydantic import BaseModel
 
 class WebPage(BaseModel):
     """Class that represent link to webpage"""
-    page_link: str
+    links: list
+    index: int
 
     class config:
         schema_extra={
             "example":{
-                "page_link":"www.example.om"
+                "links":"www.example.om",
+                "index": "compute by hash algorith"
             }
         }
