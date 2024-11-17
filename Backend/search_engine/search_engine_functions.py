@@ -18,7 +18,7 @@ def hash_function(value:str):
     for char in value:
         sum_of_chars += ord(char)
 
-    return (sum_of_chars, sum_of_chars % 761)
+    return sum_of_chars % 761
 
 async def get_links_from_webpage(web_page_url:str):
     """
@@ -29,7 +29,8 @@ async def get_links_from_webpage(web_page_url:str):
     soup = BeautifulSoup(req.text, 'html.parser')
     urls = soup.find_all('a')
     return urls
-def StringToBinary(txt_value:str):
+
+def string_to_binary(txt_value:str):
     """
         Function to convert text to binary
         Value: text to converted
@@ -38,7 +39,7 @@ def StringToBinary(txt_value:str):
     bin = ''.join(format(ord(i), '08b') for i in txt_value)
     return bin
     
-def BinaryToString(bin_value:str):
+def binary_to_string(bin_value:str):
     """
         Function to convert binary to text
         Value: bin to converted
@@ -55,11 +56,34 @@ def BinaryToString(bin_value:str):
         text = text + chr(dec_val)
     return text
 
+def binary_insert_url(arr, targetVal):
+    """
+        function to return insert index for a url using binary value of url
+        to sort.
+        arr: array of urls
+        targetVal: url to be inserted
+    """
+    left = 0
+    right = len(arr) - 1
+
+    while left < right:
+        if string_to_binary(arr[right]) < string_to_binary(targetVal):
+            return right + 1
+            break
+        if string_to_binary(arr[left]) > string_to_binary(targetVal):
+            return left
+            break
+        mid = (left + right) // 2 
+        if string_to_binary(arr[mid]) < string_to_binary(targetVal):
+            left = mid + 1
+        else: 
+            right = mid - 1
+    return left
+
 if __name__ == "__main__":
-    test = 'https://www.geeksforgeeks.org/convert-binary-to-string-using-python/'
-    print("Input text is: ", test)
-    bin_text = StringToBinary(test)
-    print("Binary conversion is: ", bin_text)
-    print(len(bin_text))
-    print("Original text coverted from Binary is: ", BinaryToString(bin_text))
+    arr = ['b', 'd', 'f', 'g', 'h']
+    tv = 'i'
+    left = binary_insert_url(arr, tv)
+    arr.insert(left, tv)
+    print(arr)
     

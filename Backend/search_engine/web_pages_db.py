@@ -14,7 +14,8 @@ import os
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
-from search_engine import WebPage, get_links_from_webpage, hash_function
+from search_engine import (WebPage, get_links_from_webpage, hash_function, 
+                           binary_insert_url)
 from fastapi import HTTPException
 import motor.motor_asyncio
 
@@ -47,21 +48,34 @@ async def insert_webpages_to_db(web_page_url:str):
     Function to get all available links in a web page
     webPageURL: valid url
     """
-    urls = get_links_from_webpage(web_page_url)
+    urls = await get_links_from_webpage(web_page_url)
+    
     for url in urls:
+        # Get href from url object
         link = url.get('href')
-        hash_value, index = hash_function(url)
+        # Addd https to links without https
+        if 'http' not in link:
+            link = 'https:' + link
+        # Allocate index for storage in DB
+        index = hash_function(link)
+        # Find if index exist in DB
         existing_urls = await collection.find_one({"index":index})
         if existing_urls:
-            links = existing_urls.links
+            links = existing_urls['links']
+            if link not in links:
+                links.insert(binary_insert_url(links, link), link)
+                response = await collection.update_one({'index':index},{'$set':{'links':links}})   
+                if response:
+                    continue
+                raise HTTPException(404, "something went wrong")
+            else: continue    
         else:
-            if 'http' not in link:
-                link = 'https:' + link
             response = await collection.insert_one({"index":index, "links":[link]})
+            if response:
+                continue
+            raise HTTPException(404, "something went wrong") 
         
-    if response:
-        return
-    raise HTTPException(404, "something went wrong")
+    
 if __name__ == "__main__":
-    asyncio.run(get_links_from_webpage('https://www.wikipedia.org'))
+    asyncio.run(insert_webpages_to_db('https://www.w3schools.com/dsa/dsa_algo_binarysearch.php'))
 # End-of-file (EOF)
