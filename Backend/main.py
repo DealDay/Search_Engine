@@ -35,7 +35,7 @@ async def get_web_pages():
     response = await fetch_all_webpages()
     return response
 
-@app.post("get_links_from_web_page")
+@app.post("get_links_from_web_page_to_db")
 async def get_links(web_page_url:str):
     """
         get links from web page

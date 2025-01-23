@@ -81,9 +81,5 @@ def binary_insert_url(arr, targetVal):
     return left
 
 if __name__ == "__main__":
-    arr = ['b', 'd', 'f', 'g', 'h']
-    tv = 'i'
-    left = binary_insert_url(arr, tv)
-    arr.insert(left, tv)
-    print(arr)
+    pass
     
