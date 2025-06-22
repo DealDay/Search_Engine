@@ -20,29 +20,32 @@ class WebPage(BaseModel):
 class Pages(BaseModel):
     """Object of web page"""
     url: str # url of web page
-    wordCount: int # how many times a word appear on the web page
     title: str # web page title
+    language: str # web page title
+    text: list # list of words on web page
 
     class config:
         schema_extra={
             "example":{
                 "url":"www.example.com",
-                "wordCount": 2,
-                "title": "Example"
+                "title": "Example",
+                "language": "en",
+                "text": ["hello", "how", "are", "you"]
             }
         }
 
-class Indexing(BaseModel):
-    """Object"""
-    token: str # word
-    webPages: Pages 
+# class Indexing(BaseModel):
+#     """Object"""
+#     token: str # word
+#     webPages: Pages 
 
-    class config:
-        schema_extra={
-            "example":{
-                "token":"Python",
-                "webPage": {"url":"www.example.com",
-                            "wordCount": 2,
-                            "title": "Example"}
-            }
-        }
+#     class config:
+#         schema_extra={
+#             "example":{
+#                 "token":"Python",
+#                 "webPage": {"url":"www.example.com",
+#                             "wordCount": 2,
+#                             "title": "Example",
+#                             "language": "en"}
+#             }
+#         }

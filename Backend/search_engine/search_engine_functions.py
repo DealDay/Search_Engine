@@ -6,7 +6,66 @@
 # Imports
 import requests
 from bs4 import BeautifulSoup
+import nltk
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer as wnl
+from langdetect import detect
+import asyncio
+import ssl
+from model import Pages
 
+# try:
+#     _create_unverified_https_context = ssl._create_unverified_context
+# except AttributeError:
+#     pass
+# else:
+#     ssl._create_default_https_context = _create_unverified_https_context
+
+# nltk.download('wordnet')
+
+lang_dict = {'sq':'albanian', 'ar':'arabic', 'az':'azerbaijani', 'eu':'basque', 
+             'be':'belarusian', 'bn':'bengali', 'ca':'catalan', 'zh-cn':'chinese', 
+             'da':'danish', 'nl':'dutch', 'en':'english', 'fi':'finnish', 'fr':'french', 
+             'de':'german', 'el':'greek', 'he':'hebrew', 'hi':'hinglish', 'hu':'hungarian', 
+             'id':'indonesian', 'it':'italian', 'kk':'kazakh', 'ne':'nepali', 'no':'norwegian', 
+             'pt':'portuguese', 'ro':'romanian', 'ru':'russian', 'sl':'slovene', 'es':'spanish', 
+             'sv':'swedish', 'tg':'tajik', 'ta':'tamil', 'tr':'turkish'}
+
+def get_text_from_web_page(url:str):
+    req = requests.get(url, timeout=20)
+    soup = BeautifulSoup(req.text, 'html.parser')
+    return soup
+
+async def get_links_from_webpage(url:str):
+    """
+    Function to get all available links in a web page
+    url: valid url
+    """
+    soup = get_text_from_web_page(url)
+    urls = soup.find_all('a')
+    return urls
+
+# Function to get information from web page
+async def get_info_from_web_page(url:str):
+    """
+    Funtion to get page title and text on a web page
+    url: page url
+    """
+    lem = wnl()
+    soup = get_text_from_web_page(url)
+    page_title = soup.title.string
+    text = soup.get_text()
+    lang = detect(text)
+    text = text.split()
+    lem_text = []
+    stop_words = stopwords.words(lang_dict[lang])
+    for txt in text:
+        if lem.lemmatize(txt).lower() not in stop_words:
+            lem_text.append(txt.lower())
+    page_info = Pages(language=lang_dict[lang], url=url, title=page_title, text=lem_text)
+
+    return page_info
+    
 # Function to get all links in a webpage
 def hash_function(value:str):
     """
@@ -19,16 +78,6 @@ def hash_function(value:str):
         sum_of_chars += ord(char)
 
     return sum_of_chars % 761
-
-async def get_links_from_webpage(web_page_url:str):
-    """
-    Function to get all available links in a web page
-    webPageURL: valid url
-    """
-    req = requests.get(web_page_url, timeout=20)
-    soup = BeautifulSoup(req.text, 'html.parser')
-    urls = soup.find_all('a')
-    return urls
 
 def string_to_binary(txt_value:str):
     """
@@ -81,5 +130,7 @@ def binary_insert_url(arr, targetVal):
     return left
 
 if __name__ == "__main__":
+    # get_info_from_web_page("https://www.tutorialspoint.com/extract-the-title-from-a-webpage-using-python#:~:text=The%20urllib%20and%20BeautifulSoup%20method,title'%20attribute.")
+    # pg = asyncio.run(get_info_from_web_page("https://rccggt.org.uk"))
     pass
     
