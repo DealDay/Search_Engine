@@ -6,6 +6,7 @@
 import random
 import asyncio
 import asyncio.coroutines
+from model import Pages
 
 # fix module imports
 import sys
@@ -25,6 +26,7 @@ client = motor.motor_asyncio.AsyncIOMotorClient('mongodb://0.0.0.0:27017')#'mong
 database = client.search_engine
 collection = database.web_pages
 visited_link = database.visited_web_pages
+page_index = database.page_index
 
 async def fetch_all_webpages():
     """
@@ -126,6 +128,22 @@ async def web_page_crawler():
         else:
             await insert_webpages_to_db(url)
             await visited_link.insert_one({"index":index, "links":[url]})
+
+async def indexing(page:Pages):
+    for token in page.text:
+        ind = await page_index.find_one({"index":token})
+        if ind:
+            update_pages = ind['pages'].append(page)
+            response = await page_index.update_one({'index':token},{'$set':{'pages':update_pages}}) 
+            if response:
+                continue
+            raise HTTPException(404, "something went wrong")
+        else:
+            response = await page.insert_one({"index":token, "pages":[page]})
+            if response:
+                continue
+            raise HTTPException(404, "something went wrong") 
+
 
 if __name__ == "__main__":
     # x = 0
