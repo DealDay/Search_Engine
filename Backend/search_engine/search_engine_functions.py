@@ -12,7 +12,9 @@ from nltk.stem import WordNetLemmatizer as wnl
 from langdetect import detect
 import asyncio
 import ssl
-from model import Pages
+from .model import Pages
+from string import punctuation
+# import motor.motor_asyncio
 
 # try:
 #     _create_unverified_https_context = ssl._create_unverified_context
@@ -30,6 +32,8 @@ lang_dict = {'sq':'albanian', 'ar':'arabic', 'az':'azerbaijani', 'eu':'basque',
              'id':'indonesian', 'it':'italian', 'kk':'kazakh', 'ne':'nepali', 'no':'norwegian', 
              'pt':'portuguese', 'ro':'romanian', 'ru':'russian', 'sl':'slovene', 'es':'spanish', 
              'sv':'swedish', 'tg':'tajik', 'ta':'tamil', 'tr':'turkish'}
+
+special_characters = list(punctuation)
 
 def get_text_from_web_page(url:str):
     req = requests.get(url, timeout=20)
@@ -60,7 +64,7 @@ async def get_info_from_web_page(url:str):
     lem_text = []
     stop_words = stopwords.words(lang_dict[lang])
     for txt in text:
-        if lem.lemmatize(txt).lower() not in stop_words:
+        if lem.lemmatize(txt).lower() not in stop_words and lem.lemmatize(txt).lower() not in special_characters:
             lem_text.append(txt.lower())
     page_info = Pages(language=lang_dict[lang], url=url, title=page_title, text=lem_text)
 
@@ -131,6 +135,7 @@ def binary_insert_url(arr, targetVal):
 
 if __name__ == "__main__":
     # get_info_from_web_page("https://www.tutorialspoint.com/extract-the-title-from-a-webpage-using-python#:~:text=The%20urllib%20and%20BeautifulSoup%20method,title'%20attribute.")
-    # pg = asyncio.run(get_info_from_web_page("https://rccggt.org.uk"))
-    pass
+    pg = asyncio.run(get_info_from_web_page("https://rccggt.org.uk"))
+    # print(pg.text)
+    # pass
     

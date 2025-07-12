@@ -7,9 +7,14 @@
 # Imports
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from search_engine import(
+from search_engine import (
     fetch_all_webpages,
-    get_links_from_webpage
+    get_links_from_webpage,
+    check_if_crawled,
+    indexing,
+    get_info_from_web_page,
+    insert_visited_webpage
+
 )
 
 # Creating instance of fastAPI
@@ -35,10 +40,27 @@ async def get_web_pages():
     response = await fetch_all_webpages()
     return response
 
-@app.post("get_links_from_web_page_to_db")
+@app.post("/get_links_from_web_page_to_db")
 async def get_links(web_page_url:str):
     """
         get links from web page
     """
     response = await get_links_from_webpage(web_page_url)
     return response
+
+@app.post("/crawl_web_page")
+async def crawl_web_page(web_page_url:str):
+    """
+        crawl web page
+    """
+    response = await check_if_crawled(web_page_url)
+    print(response)
+    if response:
+        return "Page already crawled"
+    else:
+        # pg = await get_info_from_web_page(web_page_url)
+        # await indexing(pg)
+        # await insert_visited_webpage(web_page_url)
+        # return "Success"
+        pass
+        

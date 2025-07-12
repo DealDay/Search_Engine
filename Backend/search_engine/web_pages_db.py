@@ -6,7 +6,8 @@
 import random
 import asyncio
 import asyncio.coroutines
-from model import Pages
+from .model import *
+from .search_engine_functions import * 
 
 # fix module imports
 import sys
@@ -15,8 +16,7 @@ import os
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
-from search_engine import (WebPage, get_links_from_webpage, hash_function, 
-                           binary_insert_url)
+from search_engine import *
 from fastapi import HTTPException
 import motor.motor_asyncio
 
@@ -26,7 +26,7 @@ client = motor.motor_asyncio.AsyncIOMotorClient('mongodb://0.0.0.0:27017')#'mong
 database = client.search_engine
 collection = database.web_pages
 visited_link = database.visited_web_pages
-page_index = database.page_index
+reverse_index = database.page_index
 
 async def fetch_all_webpages():
     """
@@ -61,18 +61,26 @@ async def insert_one_webpage(web_page):
             return "Link added successfully"
         raise HTTPException(404, "something went wrong") 
 
-async def insert_visited_webpage(index:int, web_page:str, arr:list):
+async def insert_visited_webpage(web_page:str):
     """
     Insert one web page to visited web page DB
     index: insert location
     web_page: web page url
     arr: array to insert web_page
     """
-    arr.insert(binary_insert_url(arr, web_page), web_page)
-    response = await collection.update_one({'index':index},{'$set':{'links':arr}})
-    if response:
-        return "Successs" 
-    raise HTTPException(404, "something went wrong")
+    hash = hash_function(web_page)
+    res = await visited_link.find_one(hash)
+    if res:
+        res["links"].insert(binary_insert_url(res["links"], web_page), web_page)
+        response = await visited_link.update_one({'index':hash},{'$set':{'links':res["links"]}})
+        if response:
+            return "Successs" 
+        raise HTTPException(404, "something went wrong")
+    else:
+        res = await visited_link.insert_one({"index":hash, "links":[web_page]})
+        if res:
+            return "Link added successfully"
+        raise HTTPException(404, "something went wrong") 
     
 async def insert_webpages_to_db(web_page_url:str):
     """
@@ -130,27 +138,34 @@ async def web_page_crawler():
             await visited_link.insert_one({"index":index, "links":[url]})
 
 async def indexing(page:Pages):
-    for token in page.text:
-        ind = await page_index.find_one({"index":token})
+    unique_text = list(dict.fromkeys(page.text))
+    for token in unique_text:
+        ind = await reverse_index.find_one({"index":token})
         if ind:
-            update_pages = ind['pages'].append(page)
-            response = await page_index.update_one({'index':token},{'$set':{'pages':update_pages}}) 
+            ind['pages'].append(page.model_dump())
+            # print(ind['pages'])
+            response = await reverse_index.update_one({'index':token},{'$set':{'pages':ind['pages']}}) 
             if response:
                 continue
             raise HTTPException(404, "something went wrong")
         else:
-            response = await page.insert_one({"index":token, "pages":[page]})
+            response = await reverse_index.insert_one({"index":token, "pages":[page.model_dump()]})
             if response:
                 continue
-            raise HTTPException(404, "something went wrong") 
+            raise HTTPException(404, "something went wrong")
 
+async def check_if_crawled(url:str):
+    """
+    Function to check if url is already crawled
+    """
+    crawled = await visited_link.find_one({"index":hash_function(url)})
+    print(crawled)
+    if crawled:
+        if url in crawled["links"]:
+            return True
 
 if __name__ == "__main__":
-    # x = 0
-    # # asyncio.set_event_loop(asyncio.new_event_loop())
-    # while x < 10:
-    #     asyncio.run(web_page_crawler())
-    #     x += 1
-    asyncio.run(web_page_crawler())
+    pg = asyncio.run(get_info_from_web_page("https://rccggt.org.uk"))
+    asyncio.run(indexing(pg))
     # asyncio.run(insert_webpages_to_db('https://campus.w3schools.com/collections/certifications/products/xml-certificate'))
 # End-of-file (EOF)
