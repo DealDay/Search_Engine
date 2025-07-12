@@ -118,6 +118,10 @@ def binary_insert_url(arr, targetVal):
     """
     left = 0
     right = len(arr) - 1
+    if right == 0:
+        if string_to_binary(arr[right]) < string_to_binary(targetVal):
+            return right + 1
+        else: return right
 
     while left < right:
         if string_to_binary(arr[right]) < string_to_binary(targetVal):

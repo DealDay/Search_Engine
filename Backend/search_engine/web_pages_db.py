@@ -64,9 +64,7 @@ async def insert_one_webpage(web_page):
 async def insert_visited_webpage(web_page:str):
     """
     Insert one web page to visited web page DB
-    index: insert location
     web_page: web page url
-    arr: array to insert web_page
     """
     hash = hash_function(web_page)
     res = await visited_link.find_one(hash)
