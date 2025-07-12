@@ -138,6 +138,10 @@ async def web_page_crawler():
             await visited_link.insert_one({"index":index, "links":[url]})
 
 async def indexing(page:Pages):
+    """
+    Function to implement reverse indexing
+    page: an object of Page(see model.py)
+    """
     unique_text = list(dict.fromkeys(page.text))
     for token in unique_text:
         ind = await reverse_index.find_one({"index":token})
@@ -159,7 +163,6 @@ async def check_if_crawled(url:str):
     Function to check if url is already crawled
     """
     crawled = await visited_link.find_one({"index":hash_function(url)})
-    print(crawled)
     if crawled:
         if url in crawled["links"]:
             return True
