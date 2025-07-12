@@ -67,13 +67,14 @@ async def insert_visited_webpage(web_page:str):
     web_page: web page url
     """
     hash = hash_function(web_page)
-    res = await visited_link.find_one(hash)
+    res = await visited_link.find_one({"index":hash})
     if res:
-        res["links"].insert(binary_insert_url(res["links"], web_page), web_page)
-        response = await visited_link.update_one({'index':hash},{'$set':{'links':res["links"]}})
-        if response:
-            return "Successs" 
-        raise HTTPException(404, "something went wrong")
+        if web_page not in res["links"]:
+            res["links"].insert(binary_insert_url(res["links"], web_page), web_page)
+            response = await visited_link.update_one({'index':hash},{'$set':{'links':res["links"]}})
+            if response:
+                return "Successs" 
+            raise HTTPException(404, "something went wrong")
     else:
         res = await visited_link.insert_one({"index":hash, "links":[web_page]})
         if res:

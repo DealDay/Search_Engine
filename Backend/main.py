@@ -54,13 +54,11 @@ async def crawl_web_page(web_page_url:str):
         crawl web page
     """
     response = await check_if_crawled(web_page_url)
-    print(response)
     if response:
         return "Page already crawled"
     else:
-        # pg = await get_info_from_web_page(web_page_url)
-        # await indexing(pg)
-        # await insert_visited_webpage(web_page_url)
-        # return "Success"
-        pass
+        pg = await get_info_from_web_page(web_page_url)
+        await indexing(pg)
+        await insert_visited_webpage(web_page_url)
+        return "Success"
         
