@@ -117,6 +117,9 @@ async def insert_webpages_to_db(web_page_url:str):
             raise HTTPException(404, "something went wrong") 
 
 async def web_page_crawler():
+    """
+    Function to randomly pick web page from DB and crawl it's content
+    """
     # Generate a random number between 0 and 760 both included
     index = random.randint(0, 760)
     response = await collection.find_one({"index":index})
@@ -129,12 +132,12 @@ async def web_page_crawler():
         res = await visited_link.find_one({"index":index})
         if res:
             if url not in res['links']:
+                # Get information from web page
+                pg = await get_info_from_web_page(url)
+                await indexing(pg)
                 # Get web_links from web page
-                asyncio.run(insert_webpages_to_db(url))
-                insert_visited_webpage(index, url, visited_link['links'])
-        else:
-            await insert_webpages_to_db(url)
-            await visited_link.insert_one({"index":index, "links":[url]})
+                await insert_webpages_to_db(url)
+                await insert_visited_webpage(url)
 
 async def indexing(page:Pages):
     """
