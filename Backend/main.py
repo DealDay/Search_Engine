@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from search_engine import (
     fetch_all_webpages,
-    get_links_from_webpage,
+    web_crawler,
     check_if_crawled,
     indexing,
     get_info_from_web_page,
@@ -40,14 +40,16 @@ async def get_web_pages():
     response = await fetch_all_webpages()
     return response
 
+# ApI to start automatic web crawling
 @app.post("/get_links_from_web_page_to_db")
-async def get_links(web_page_url:str):
+async def crawl_the_web():
     """
-        get links from web page
+        start crawing web pages in the DB
     """
-    response = await get_links_from_webpage(web_page_url)
+    response = await web_crawler()
     return response
 
+# API to crawl info from one web page
 @app.post("/crawl_web_page")
 async def crawl_web_page(web_page_url:str):
     """

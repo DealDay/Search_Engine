@@ -116,7 +116,7 @@ async def insert_webpages_to_db(web_page_url:str):
                 continue
             raise HTTPException(404, "something went wrong") 
 
-async def web_page_crawler():
+async def web_crawler():
     """
     Function to randomly pick web page from DB and crawl it's content
     """
