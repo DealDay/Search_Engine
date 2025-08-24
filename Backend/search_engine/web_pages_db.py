@@ -6,12 +6,13 @@
 import random
 import asyncio
 import asyncio.coroutines
-from .model import *
-from .search_engine_functions import * 
+# from .model import *
+# from .search_engine_functions import * 
 
 # fix module imports
 import sys
 import os
+import re
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
@@ -25,7 +26,7 @@ import motor.motor_asyncio
 client = motor.motor_asyncio.AsyncIOMotorClient('mongodb://0.0.0.0:27017')#'mongodb://0.0.0.0:27017'
 database = client.search_engine
 collection = database.web_pages
-visited_link = database.visited_web_pages
+crawled_link = database.crawled_web_pages
 reverse_index = database.page_index
 
 async def fetch_all_webpages():
@@ -67,16 +68,16 @@ async def insert_visited_webpage(web_page:str):
     web_page: web page url
     """
     hash = hash_function(web_page)
-    res = await visited_link.find_one({"index":hash})
+    res = await crawled_link.find_one({"index":hash})
     if res:
         if web_page not in res["links"]:
             res["links"].insert(binary_insert_url(res["links"], web_page), web_page)
-            response = await visited_link.update_one({'index':hash},{'$set':{'links':res["links"]}})
+            response = await crawled_link.update_one({'index':hash},{'$set':{'links':res["links"]}})
             if response:
                 return "Successs" 
             raise HTTPException(404, "something went wrong")
     else:
-        res = await visited_link.insert_one({"index":hash, "links":[web_page]})
+        res = await crawled_link.insert_one({"index":hash, "links":[web_page]})
         if res:
             return "Link added successfully"
         raise HTTPException(404, "something went wrong") 
@@ -92,10 +93,10 @@ async def insert_webpages_to_db(web_page_url:str):
         # Get href from url object
         link = url.get('href')
         # continue if not an external link
-        if link == None or '.' not in link:
+        if link == None or '.' not in link or re.findall("\A/[a-z]", link):
             continue
         # Add https to links without https
-        if 'http' not in link:
+        if re.findall("\A//", link):    
             link = 'https:' + link
         # Allocate index for storage in DB
         index = hash_function(link)
@@ -123,21 +124,24 @@ async def web_crawler():
     # Generate a random number between 0 and 760 both included
     index = random.randint(0, 760)
     response = await collection.find_one({"index":index})
-
+    print(index)
     if response:
+        print(index)
         # Generate a random number between 0 and len(links)
         ind = random.randint(0, len(response['links']) - 1)
         url = response['links'][ind]
         # Check if link is already visited
-        res = await visited_link.find_one({"index":index})
-        if res:
-            if url not in res['links']:
-                # Get information from web page
-                pg = await get_info_from_web_page(url)
-                await indexing(pg)
-                # Get web_links from web page
-                await insert_webpages_to_db(url)
-                await insert_visited_webpage(url)
+        res = await check_if_crawled(url)
+        if res: return "Url already crawled"
+        else: 
+            # Get information from web page
+            pg = await get_info_from_web_page(url)
+            await indexing(pg)
+            # Get web_links from web page
+            await insert_webpages_to_db(url)
+            await insert_visited_webpage(url)
+            return url
+    else: return "No url in index yet"
 
 async def indexing(page:Pages):
     """
@@ -164,13 +168,27 @@ async def check_if_crawled(url:str):
     """
     Function to check if url is already crawled
     """
-    crawled = await visited_link.find_one({"index":hash_function(url)})
+    crawled = await crawled_link.find_one({"index":hash_function(url)})
     if crawled:
         if url in crawled["links"]:
             return True
+        else: return False
+    else: return False
+
+async def clean_db():
+    res = await fetch_all_webpages()
+    for pages in res:
+        for link in pages.links:
+            if re.findall("\Ahttps:/[a-z]", link):
+                print(link)
+                pages.links.remove(link)
+        await collection.update_one({"index":pages.index}, {'$set':{"links":pages.links}})
+    print('done')
+
 
 if __name__ == "__main__":
-    pg = asyncio.run(get_info_from_web_page("https://rccggt.org.uk"))
-    asyncio.run(indexing(pg))
+    asyncio.run(clean_db())
+    # pg = asyncio.run(get_info_from_web_page("https://rccggt.org.uk"))
+    # asyncio.run(indexing(pg))
     # asyncio.run(insert_webpages_to_db('https://campus.w3schools.com/collections/certifications/products/xml-certificate'))
 # End-of-file (EOF)

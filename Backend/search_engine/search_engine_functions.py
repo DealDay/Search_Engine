@@ -62,6 +62,9 @@ async def get_info_from_web_page(url:str):
     lang = detect(text)
     text = text.split()
     lem_text = []
+    # set lang to en if not in lang_dict: should be revised
+    if lang not in lang_dict.keys():
+        lang = 'en'
     stop_words = stopwords.words(lang_dict[lang])
     for txt in text:
         if lem.lemmatize(txt).lower() not in stop_words and lem.lemmatize(txt).lower() not in special_characters:
