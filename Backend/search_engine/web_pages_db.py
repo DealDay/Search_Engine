@@ -124,9 +124,7 @@ async def web_crawler():
     # Generate a random number between 0 and 760 both included
     index = random.randint(0, 760)
     response = await collection.find_one({"index":index})
-    print(index)
     if response:
-        print(index)
         # Generate a random number between 0 and len(links)
         ind = random.randint(0, len(response['links']) - 1)
         url = response['links'][ind]
