@@ -4,9 +4,9 @@ import axios from "axios"
 import "./Home.css";
 
 const Home = () => {
-  const [url, setUrl] = useState('');
-  const [tab, setTab] = useState('search'); 
+  const [webPage, setWebpage] = useState('');
   const [searchWord, setSearchWord] = useState('')
+  const [successMsg, setSuccessMsg] = useState('');
 
   const switchTab = (evt, tabName) =>{
     var i, tabContent, tabLinks;
@@ -25,21 +25,16 @@ const Home = () => {
     evt.currentTarget.className += " active";
   } 
 
-  // const crawl = () => {
-  //   axios.post('http://localhost:8000/crawl_web_page', {
-  //       'web_page_url': url
-  //     }).then(res => {
-  //       if (res.data['access_token']) {
-  //         // sessionStorage.setItem('token', res.data['access_token']) 
-  //         // axios.get(`http://localhost:8000/user/${email}`).then(res => {
-  //         //   setUserDetails(res.data) 
-  //         //   sessionStorage.setItem('role', res.data['role'])
-  //         // })
-  //         // setShowLoginPage(false)
-  //       }
-  //       // else setErr(res.data['error'])
-  //     }).catch(() => setSearchWord('Please enter email and password'))
-  // };
+  const crawl = () => {
+    axios.post('http://localhost:8000/crawl_web_page', {
+        'url': webPage
+      }).then(res => {
+        if (res.data) {
+          setSuccessMsg(res.data)
+        }
+        // else setErr(res.data['error'])
+      }).catch((error) => setSuccessMsg(error.message))
+  };
 
   // const search = () => {
   //   axios.post('http://localhost:8000/search', {
@@ -76,10 +71,12 @@ const Home = () => {
           </div>
           <div id="crawl" className="tab_content">
             <div>
-              <input placeholder="Please enter a valid url" className="input" type="text" id="url"></input>
+              <input onChange={event => setWebpage(event.target.value)} 
+              placeholder="Please enter a valid url" className="input" type="text" id="url"></input>
             </div>
             <div className="button_div">
-              <button>Crawl</button>
+              <button onClick={crawl}>Crawl</button>
+              <text className="success_msg">{successMsg}</text>
             </div>
           </div>
         </div>
