@@ -18,19 +18,44 @@
 }
 
 .button_div{
-    margin-top: 2vh;
+    margin-top: 20px;
 }
 
 .button_div button{
-    margin: 10px;
-    width: 200px;
+    /* margin: 10px; */
+    width: 400px;
     height: 50px;
     border-radius: 20px;
-    font-size: 20px;
+    font-size: 30px;
     cursor: pointer;
 }
 
 .logo_div{
-    margin: 10px;
+    /* margin: 10px; */
     font-size: 50px;
+}
+
+.tab_div button{
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-right: 20px;
+    width: 200px;
+    height: 50px;
+    /* border-radius: 20px; */
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.tab_div button:hover{
+    background-color: gray;
+}
+
+.tab_div button.active{
+    background-color: gray;
+}
+
+.tab_content{
+    display: none;
+    flex-direction: column;
+    align-items: center;
 }
