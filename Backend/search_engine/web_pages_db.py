@@ -6,6 +6,7 @@
 import random
 import asyncio
 import asyncio.coroutines
+from rank_bm25 import BM25Okapi
 # from .model import *
 # from .search_engine_functions import * 
 
@@ -28,6 +29,43 @@ database = client.search_engine
 collection = database.web_pages
 crawled_link = database.crawled_web_pages
 reverse_index = database.page_index
+
+async def search_query_in_db(query:list):
+    """
+    return web pages that conatain search query
+    query: list of search query
+    return web pages with search query
+    """
+    print(query)
+    search_info = []
+    for queries in query:
+        data = await reverse_index.find_one({"index":queries})
+        for x in range(len(data['pages'])):
+            print(data['pages'][x]['url'])
+            if data['pages'][x] not in search_info:
+                print('yes')
+                search_info.append(data['pages'][x])
+    return search_info
+
+async def rank_bm25(data:list, query:list):
+    """
+    rank web page with relevance to search query
+    data: web pages the contain at least one search query
+    query: search query
+    return sorted web pages based on relevance 
+    """
+    bm25 = []
+    for d in data:
+        bm25.append(d['text'])
+    bm25 = BM25Okapi(bm25)
+    rank = bm25.get_scores(query)
+    # add rank to web pages
+    for x in range(len(data)):
+        data[x]['rank'] = rank[x]
+    # sort data based on rank score
+    data = sorted(data, key=lambda x: x['rank'], reverse=True)
+    return data
+    
 
 async def fetch_all_webpages():
     """

@@ -34,6 +34,26 @@ class Pages(BaseModel):
             }
         }
 
+class UrlSchema(BaseModel):
+    url: str # url
+    
+    class config:
+        schema_extra={
+            "example":{
+                'url': 'www.simplesearch.com'
+            }
+        }
+
+class QuerySchema(BaseModel):
+    query: str # query
+    
+    class config:
+        schema_extra={
+            "example":{
+                'query': 'why did the chicken cross the road'
+            }
+        }
+
 # class Indexing(BaseModel):
 #     """Object"""
 #     token: str # word

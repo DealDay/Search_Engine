@@ -5,7 +5,7 @@
 """
 
 # Imports
-from fastapi import FastAPI
+from fastapi import FastAPI, Body
 from fastapi.middleware.cors import CORSMiddleware
 from search_engine import (
     fetch_all_webpages,
@@ -13,8 +13,12 @@ from search_engine import (
     check_if_crawled,
     indexing,
     get_info_from_web_page,
-    insert_visited_webpage
-
+    insert_visited_webpage,
+    UrlSchema,
+    QuerySchema,
+    normalize_search_words,
+    search_query_in_db,
+    rank_bm25
 )
 
 # Creating instance of fastAPI
@@ -51,16 +55,25 @@ async def crawl_the_web():
 
 # API to crawl info from one web page
 @app.post("/crawl_web_page")
-async def crawl_web_page(web_page_url:str):
+async def crawl_web_page(web_page:UrlSchema=Body(...)):
     """
         crawl web page
     """
-    response = await check_if_crawled(web_page_url)
+    response = await check_if_crawled(web_page.url)
     if response:
         return "Page already crawled"
     else:
-        pg = await get_info_from_web_page(web_page_url)
+        pg = await get_info_from_web_page(web_page.url)
         await indexing(pg)
-        await insert_visited_webpage(web_page_url)
-        return "Success"
-        
+        await insert_visited_webpage(web_page.url)
+        return "Page crawled successfully"
+
+#API for searching query
+@app.post("/search_the_web")
+async def search_the_web(query:QuerySchema=Body(...)):
+    query = await normalize_search_words(query.query)
+    data = await search_query_in_db(query)
+    rank = await rank_bm25(data, query)
+    # print(len(rank))
+    return rank
+    

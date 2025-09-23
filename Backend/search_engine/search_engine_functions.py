@@ -57,7 +57,8 @@ async def get_info_from_web_page(url:str):
     """
     lem = wnl()
     soup = get_text_from_web_page(url)
-    page_title = soup.title.string
+    if soup.title != None: page_title = soup.title.string
+    else: page_title = ''
     text = soup.get_text()
     lang = detect(text)
     text = text.split()
@@ -72,6 +73,26 @@ async def get_info_from_web_page(url:str):
     page_info = Pages(language=lang_dict[lang], url=url, title=page_title, text=lem_text)
 
     return page_info
+
+async def normalize_search_words(query:str):
+    """
+    Function to normaliye search words by lemmatization 
+    query: search word(s)   
+    """
+    lem = wnl()
+    # detect query language
+    lang = detect(query)
+    # split query
+    query = query.split()
+    # set lang to en if not in lang_dict: should be revised
+    if lang not in lang_dict.keys():
+        lang = 'en'
+    stop_words = stopwords.words(lang_dict[lang])
+    lem_text = []
+    for txt in query:
+        if lem.lemmatize(txt).lower() not in stop_words and lem.lemmatize(txt).lower() not in special_characters:
+            lem_text.append(txt.lower())
+    return lem_text
     
 # Function to get all links in a webpage
 def hash_function(value:str):
