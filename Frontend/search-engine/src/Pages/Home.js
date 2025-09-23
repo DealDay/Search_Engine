@@ -36,21 +36,16 @@ const Home = () => {
       }).catch((error) => setSuccessMsg(error.message))
   };
 
-  // const search = () => {
-  //   axios.post('http://localhost:8000/search', {
-  //     'key_words': searchWord
-  //   }).then(
-  //     res => {
-  //       if (res.data) {
-  //         // sessionStorage.setItem('token', res.data['access_token']) 
-  //         // axios.get(`http://localhost:8000/user/${email}`).then(res => {
-  //         //   setUserDetails(res.data) 
-  //         //   sessionStorage.setItem('role', res.data['role'])
-  //         // })
-  //         // setShowLoginPage(false)
-  //       }}
-  //   ).catch(() => setSearchWord('Please enter email and password'))
-  // };
+  const search = () => {
+    axios.post('http://localhost:8000/search_the_web', {
+      'query': searchWord
+    }).then(
+      res => {
+        if (res.data) {
+          console.log(res.data)
+        }}
+    ).catch((error) => setSuccessMsg(error.message))
+  };
   return (
     <React.Fragment>
         <div className="input_div">
@@ -63,10 +58,12 @@ const Home = () => {
           </div>
           <div id="search" className="tab_content">
             <div>
-              <input placeholder="&#x1F50D;" className="input" type="text" id="search_word"></input>
+              <input onChange={event => setSearchWord(event.target.value)} 
+              placeholder="&#x1F50D;" 
+              className="input" type="text" id="search_word"></input>
             </div>
             <div className="button_div">
-              <button>Search</button>
+              <button onClick={search}>Search</button>
             </div>
           </div>
           <div id="crawl" className="tab_content">
