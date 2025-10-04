@@ -36,14 +36,14 @@ async def search_query_in_db(query:list):
     query: list of search query
     return web pages with search query
     """
-    print(query)
+    # print(query)
     search_info = []
     for queries in query:
         data = await reverse_index.find_one({"index":queries})
         for x in range(len(data['pages'])):
-            print(data['pages'][x]['url'])
+            # print(data['pages'][x]['url'])
             if data['pages'][x] not in search_info:
-                print('yes')
+                # print('yes')
                 search_info.append(data['pages'][x])
     return search_info
 

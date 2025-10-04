@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios"
+import { NavLink } from "react-router-dom";
 
+import ResultPage from "./ResultPage";
 import "./Home.css";
 
 const Home = () => {
@@ -36,19 +38,9 @@ const Home = () => {
       }).catch((error) => setSuccessMsg(error.message))
   };
 
-  const search = () => {
-    axios.post('http://localhost:8000/search_the_web', {
-      'query': searchWord
-    }).then(
-      res => {
-        if (res.data) {
-          console.log(res.data)
-        }}
-    ).catch((error) => setSuccessMsg(error.message))
-  };
   return (
     <React.Fragment>
-        <div className="input_div">
+       <div className="input_div">
           <div className="logo_div">
             Simple Search
           </div>
@@ -63,7 +55,7 @@ const Home = () => {
               className="input" type="text" id="search_word"></input>
             </div>
             <div className="button_div">
-              <button onClick={search}>Search</button>
+              <NavLink to={`/${searchWord}`}>Search</NavLink>
             </div>
           </div>
           <div id="crawl" className="tab_content">

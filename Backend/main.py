@@ -71,7 +71,7 @@ async def crawl_web_page(web_page:UrlSchema=Body(...)):
 #API for searching query
 @app.post("/search_the_web")
 async def search_the_web(query:QuerySchema=Body(...)):
-    query = await normalize_search_words(query.query)
+    query = await normalize_search_words(query.query[1:])
     data = await search_query_in_db(query)
     rank = await rank_bm25(data, query)
     # print(len(rank))

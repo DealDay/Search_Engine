@@ -83,7 +83,7 @@ async def normalize_search_words(query:str):
     # detect query language
     lang = detect(query)
     # split query
-    query = query.split()
+    query = query.split("%20")
     # set lang to en if not in lang_dict: should be revised
     if lang not in lang_dict.keys():
         lang = 'en'
